@@ -1,4 +1,5 @@
 require "./coffeemaker"
+require "./cups"
 
 module Application
   def self.run
@@ -12,6 +13,7 @@ module Application
       when "b" then menu.fillTank
       when "c" then menu.addGround
       when "d" then menu.makeCoffee
+      when "e" then menu.selectCoffeeMaker
       end
     end while choice != "q"
   end
@@ -47,6 +49,7 @@ module Application
       puts "b - Fill water tank"
       puts "c - Add coffee ground"
       puts "d - Make coffee"
+      puts "e - Buy new coffee maker"
       puts "q - Quit"
       print "Enter your choice: "
     end
@@ -65,11 +68,33 @@ module Application
 
     def makeCoffee
       begin
-        @coffeemaker.makeCoffee
+        cup = cupSelection()
+        @coffeemaker.makeCoffee(cup)
       rescue => e
         puts e.message
         sleep 2
       end
+    end
+
+    private
+
+    def cupSelection
+      begin
+        puts "Select cup".center(50)
+        puts "a - Small"
+        puts "b - Medium"
+        puts "c - Large"
+        print "Enter your choice: "
+        choice = gets.chomp
+
+        case choice
+        when "a" then return SmallCup.new
+        when "b" then return MediumCup.new
+        when "c" then return LargeCup.new
+        else puts "Try again!"
+        end
+        puts "outside"
+      end while true
     end
   end
 end

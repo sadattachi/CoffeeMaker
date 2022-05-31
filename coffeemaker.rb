@@ -23,20 +23,34 @@ class CoffeeMaker
     @coffeeInserted = true
   end
 
-  def makeCoffee(message)
-    raise NoPowerException.new("No power!") unless @powerState
-    raise NotEnoughWaterException.new("Not enough water!") if @currentWaterCapacity < 250
-    raise NoCoffeeException.new("No coffee!") unless @coffeeInserted
+  def makeCoffee(cup)
+    checkState(cup)
     system("clear")
+    boilWater()
+    puts "Enjoy your #{cup.size}ml coffee!"
+    sleep 3
+    updateState(cup)
+  end
+
+  private
+
+  def boilWater
     10.step(100, 10) { |i|
       puts "Boiling water #{i} degrees"
       sleep @boilingSpeed
       system("clear")
     }
-    puts message
-    sleep 3
+  end
+
+  def updateState(cup)
     @coffeeInserted = false
-    @currentWaterCapacity -= 250
+    @currentWaterCapacity -= cup.size
+  end
+
+  def checkState(cup)
+    raise NoPowerException.new("No power!") unless @powerState
+    raise NotEnoughWaterException.new("Not enough water!") if @currentWaterCapacity < cup.size
+    raise NoCoffeeException.new("No coffee!") unless @coffeeInserted
   end
 end
 
@@ -49,7 +63,7 @@ class FastCoffeeMaker < CoffeeMaker
     "Fast Coffee Maker"
   end
 
-  def makeCoffee(message = "Enjoy your fast coffee!")
+  def makeCoffee(cup)
     super
   end
 end
@@ -63,7 +77,7 @@ class NormalCoffeeMaker < CoffeeMaker
     "Coffee Maker"
   end
 
-  def makeCoffee(message = "Enjoy your coffee!")
+  def makeCoffee(cup)
     super
   end
 end
@@ -77,7 +91,7 @@ class GroupCoffeeMaker < CoffeeMaker
     "Group Coffee Maker"
   end
 
-  def makeCoffee(message = "Enjoy your coffee with friends!")
+  def makeCoffee(cup)
     super
   end
 end
