@@ -91,7 +91,27 @@ class GroupCoffeeMaker < CoffeeMaker
     "Group Coffee Maker"
   end
 
+  def selectCupNumber(cup)
+    begin
+      print "Enter number of cups (1 - #{@currentWaterCapacity / cup.size}): "
+      number = gets.chomp.to_i
+      puts "Not enough water! Try again!" if number * cup.size > @currentWaterCapacity or number < 1
+    end while number * cup.size > @currentWaterCapacity or number < 1
+    number
+  end
+
+  def updateState(ml)
+    @coffeeInserted = false
+    @currentWaterCapacity -= ml
+  end
+
   def makeCoffee(cup)
-    super
+    checkState(cup)
+    number = selectCupNumber(cup)
+    system("clear")
+    boilWater()
+    puts "Enjoy your #{number} cups of coffee!"
+    sleep 3
+    updateState(cup.size * number)
   end
 end

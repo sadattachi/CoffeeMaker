@@ -81,9 +81,9 @@ module Application
     def cupSelection
       begin
         puts "Select cup".center(50)
-        puts "a - Small"
-        puts "b - Medium"
-        puts "c - Large"
+        puts "a - Small  (250ml)"
+        puts "b - Medium (350ml)"
+        puts "c - Large  (500ml)"
         print "Enter your choice: "
         choice = gets.chomp
 
