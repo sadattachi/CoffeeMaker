@@ -13,12 +13,16 @@ module Application
       when "b" then menu.fillTank
       when "c" then menu.addGround
       when "d" then menu.makeCoffee
+      when "m"
+        menu.fillMilkTank if menu.coffeemaker.is_a? CoffeeMachine
       when "e" then menu.selectCoffeeMaker
       end
     end while choice != "q"
   end
 
   class Menu
+    attr_reader :coffeemaker
+
     def initialize
       @coffeemaker = nil
     end
@@ -29,6 +33,7 @@ module Application
       puts "a - Normal"
       puts "b - Fast"
       puts "c - For Groups"
+      puts "d - CoffeeMachine"
       print "Enter your choice: "
       choice = gets.chomp
 
@@ -36,6 +41,7 @@ module Application
       when "a" then @coffeemaker = NormalCoffeeMaker.new
       when "b" then @coffeemaker = FastCoffeeMaker.new
       when "c" then @coffeemaker = GroupCoffeeMaker.new
+      when "d" then @coffeemaker = CoffeeMachine.new
       end
     end
 
@@ -43,11 +49,21 @@ module Application
       system("clear")
       puts @coffeemaker.getName.center(50)
       puts "State: #{@coffeemaker.powerState ? "on" : "off"}"
-      puts "Coffee grounds: #{@coffeemaker.coffeeInserted ? "inserted" : "missing"}"
+      if @coffeemaker.is_a? CoffeeMachine
+        puts "Coffee shots: #{@coffeemaker.coffeeCount}"
+      else
+        puts "Coffee grounds: #{@coffeemaker.coffeeInserted ? "inserted" : "missing"}"
+      end
       puts "Water tank: #{@coffeemaker.currentWaterCapacity}ml"
+      puts "Milk tank: #{@coffeemaker.currentMilkCapacity}ml" if @coffeemaker.is_a? CoffeeMachine
       puts "a - Power Switch"
       puts "b - Fill water tank"
-      puts "c - Add coffee ground"
+      if @coffeemaker.is_a? CoffeeMachine
+        puts "c - Add coffee shots"
+      else
+        puts "c - Add coffee ground"
+      end
+      puts "m - Fill milk tank" if @coffeemaker.is_a? CoffeeMachine
       puts "d - Make coffee"
       puts "e - Buy new coffee maker"
       puts "q - Quit"
@@ -62,13 +78,21 @@ module Application
       @coffeemaker.fillTank
     end
 
+    def fillMilkTank
+      @coffeemaker.fillMilkTank
+    end
+
     def addGround
       @coffeemaker.addGround
     end
 
     def makeCoffee
       begin
-        cup = cupSelection()
+        if !(@coffeemaker.is_a? CoffeeMachine)
+          cup = cupSelection()
+        else
+          cup = MediumCup.new
+        end
         @coffeemaker.makeCoffee(cup)
       rescue => e
         puts e.message

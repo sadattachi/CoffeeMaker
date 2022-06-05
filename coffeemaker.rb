@@ -1,4 +1,5 @@
 require "./exceptions"
+require "./coffees"
 
 class CoffeeMaker
   attr_reader :powerState, :currentWaterCapacity, :coffeeInserted
@@ -113,5 +114,81 @@ class GroupCoffeeMaker < CoffeeMaker
     puts "Enjoy your #{number} cups of coffee!"
     sleep 3
     updateState(cup.size * number)
+  end
+end
+
+class CoffeeMachine < CoffeeMaker
+  attr_reader :currentMilkCapacity, :coffeeCount
+
+  def initialize
+    super(1500, 0.8)
+    @maxMilkCapacity = 1000
+    @currentMilkCapacity = 0
+    @coffeeCount = 0
+  end
+
+  def getName
+    "Coffee Machine"
+  end
+
+  def fillMilkTank
+    @currentMilkCapacity = @maxMilkCapacity
+  end
+
+  def selectCoffee
+    puts "Coffee Selection".center(50)
+    puts "a - Espresso"
+    puts "b - Latte"
+    puts "c - Cappuccino"
+    print "Enter your choice: "
+    choice = gets.chomp
+    choice
+  end
+
+  def addGround
+    @coffeeCount = 10
+  end
+
+  def makeCoffee(cup)
+    coffee = selectCoffee()
+    result = nil
+    case coffee
+    when "a" then result = EspressoCreator.new.getCoffee
+    when "b" then result = LatteCreator.new.getCoffee
+    when "c" then result = CappuccinoCreator.new.getCoffee
+    else
+      puts "Wrong input!"
+      sleep 2
+      return
+    end
+    checkState(result[1], result[2])
+    system("clear")
+    boilWater()
+    puts result[0]
+    sleep 3
+    updateWater(result[1])
+    updateMilk(result[2])
+    updateState()
+  end
+
+  private
+
+  def updateMilk(number)
+    @currentMilkCapacity -= number
+  end
+
+  def updateWater(number)
+    @currentWaterCapacity -= number
+  end
+
+  def updateState
+    @coffeeCount -= 1
+  end
+
+  def checkState(water, milk)
+    raise NoPowerException.new("No power!") unless @powerState
+    raise NotEnoughWaterException.new("Not enough water!") if @currentWaterCapacity < water
+    raise NotEnoughMilkException.new("Not enough milk!") if @currentMilkCapacity < milk
+    raise NoCoffeeException.new("No coffee!") if @coffeeCount == 0
   end
 end
