@@ -16,7 +16,7 @@ module Application
       when 'b' then menu.fill_tank
       when 'c' then menu.add_ground
       when 'd' then menu.make_coffee
-      when 'q' then puts "Bye!"
+      when 'q' then puts 'Bye!'
       when 'm'
         menu.fill_milk_tank if menu.coffee_maker.is_a? CoffeeMachine
       when 'e' then menu.select_coffee_maker
@@ -107,7 +107,6 @@ module Application
     end
 
     def make_coffee
-      puts "test"
       cup = if !(@coffee_maker.is_a? CoffeeMachine)
               cup_selection
             else
