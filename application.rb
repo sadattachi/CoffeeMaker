@@ -16,6 +16,8 @@ module Application
       when "m"
         menu.fillMilkTank if menu.coffeemaker.is_a? CoffeeMachine
       when "e" then menu.selectCoffeeMaker
+      else
+        menu.wrongInput
       end
     end while choice != "q"
   end
@@ -28,21 +30,27 @@ module Application
     end
 
     def selectCoffeeMaker
-      system("clear")
-      puts "Select Coffee Maker".center(50)
-      puts "a - Normal"
-      puts "b - Fast"
-      puts "c - For Groups"
-      puts "d - CoffeeMachine"
-      print "Enter your choice: "
-      choice = gets.chomp
+      begin
+        checker = false
+        system("clear")
+        puts "Select Coffee Maker".center(50)
+        puts "a - Normal"
+        puts "b - Fast"
+        puts "c - For Groups"
+        puts "d - CoffeeMachine"
+        print "Enter your choice: "
+        choice = gets.chomp
 
-      case choice
-      when "a" then @coffeemaker = NormalCoffeeMaker.new
-      when "b" then @coffeemaker = FastCoffeeMaker.new
-      when "c" then @coffeemaker = GroupCoffeeMaker.new
-      when "d" then @coffeemaker = CoffeeMachine.new
-      end
+        case choice
+        when "a" then @coffeemaker = NormalCoffeeMaker.new
+        when "b" then @coffeemaker = FastCoffeeMaker.new
+        when "c" then @coffeemaker = GroupCoffeeMaker.new
+        when "d" then @coffeemaker = CoffeeMachine.new
+        else
+          checker = true
+          wrongInput()
+        end
+      end while checker
     end
 
     def printMenu
@@ -68,6 +76,11 @@ module Application
       puts "e - Buy new coffee maker"
       puts "q - Quit"
       print "Enter your choice: "
+    end
+
+    def wrongInput
+      puts "Wrong input! Try again!"
+      sleep 2
     end
 
     def switchPower
@@ -104,6 +117,7 @@ module Application
 
     def cupSelection
       begin
+        system("clear")
         puts "Select cup".center(50)
         puts "a - Small  (250ml)"
         puts "b - Medium (350ml)"
@@ -115,9 +129,9 @@ module Application
         when "a" then return SmallCup.new
         when "b" then return MediumCup.new
         when "c" then return LargeCup.new
-        else puts "Try again!"
+        else
+          wrongInput()
         end
-        puts "outside"
       end while true
     end
   end

@@ -1,5 +1,6 @@
 require "./exceptions"
 require "./coffees"
+require "active_support/inflector"
 
 class CoffeeMaker
   attr_reader :powerState, :currentWaterCapacity, :coffeeInserted
@@ -94,10 +95,18 @@ class GroupCoffeeMaker < CoffeeMaker
 
   def selectCupNumber(cup)
     begin
+      system("clear")
       print "Enter number of cups (1 - #{@currentWaterCapacity / cup.size}): "
       number = gets.chomp.to_i
-      puts "Not enough water! Try again!" if number * cup.size > @currentWaterCapacity or number < 1
-    end while number * cup.size > @currentWaterCapacity or number < 1
+      checker = number * cup.size > @currentWaterCapacity
+      if checker
+        puts "To many cups! Try again!"
+        sleep 2
+      elsif number < 1
+        puts "Wrong input! Try Again!"
+        sleep 2
+      end
+    end while checker or number < 1
     number
   end
 
@@ -111,7 +120,7 @@ class GroupCoffeeMaker < CoffeeMaker
     number = selectCupNumber(cup)
     system("clear")
     boilWater()
-    puts "Enjoy your #{number} cups of coffee!"
+    puts "Enjoy your #{number} #{"cup".pluralize(number)} of coffee!"
     sleep 3
     updateState(cup.size * number)
   end
@@ -136,12 +145,20 @@ class CoffeeMachine < CoffeeMaker
   end
 
   def selectCoffee
-    puts "Coffee Selection".center(50)
-    puts "a - Espresso"
-    puts "b - Latte"
-    puts "c - Cappuccino"
-    print "Enter your choice: "
-    choice = gets.chomp
+    begin
+      system("clear")
+      puts "Coffee Selection".center(50)
+      puts "a - Espresso"
+      puts "b - Latte"
+      puts "c - Cappuccino"
+      print "Enter your choice: "
+      choice = gets.chomp
+      checker = !(("a".."c").include? choice)
+      if checker
+        puts "Wrong input! Try again!"
+        sleep 2
+      end
+    end while checker
     choice
   end
 
@@ -156,14 +173,11 @@ class CoffeeMachine < CoffeeMaker
     when "a" then result = EspressoCreator.new.getCoffee
     when "b" then result = LatteCreator.new.getCoffee
     when "c" then result = CappuccinoCreator.new.getCoffee
-    else
-      puts "Wrong input!"
-      sleep 2
-      return
     end
     checkState(result[1], result[2])
     system("clear")
     boilWater()
+    pourMilk() if result[2] > 0
     puts result[0]
     sleep 3
     updateWater(result[1])
@@ -172,6 +186,16 @@ class CoffeeMachine < CoffeeMaker
   end
 
   private
+
+  def pourMilk
+    system("clear")
+    print "Pouring milk"
+    4.times do
+      sleep 0.5
+      print "."
+    end
+    system("clear")
+  end
 
   def updateMilk(number)
     @currentMilkCapacity -= number
