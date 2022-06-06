@@ -1,218 +1,221 @@
-require "./exceptions"
-require "./coffees"
-require "active_support/inflector"
+# frozen_string_literal: true
 
+require './exceptions'
+require './coffees'
+require 'active_support/inflector'
+
+# Base class for coffee makers
 class CoffeeMaker
-  attr_reader :powerState, :currentWaterCapacity, :coffeeInserted
+  attr_reader :power_state, :current_water_capacity, :coffee_inserted
 
-  def initialize(maxCapacity, boilingSpeed)
-    @powerState = false
-    @coffeeInserted = false
-    @maxWaterCapacity = maxCapacity
-    @currentWaterCapacity = 0
-    @boilingSpeed = boilingSpeed
+  def initialize(max_capacity, boiling_speed)
+    @power_state = false
+    @coffee_inserted = false
+    @max_water_capacity = max_capacity
+    @current_water_capacity = 0
+    @boiling_speed = boiling_speed
   end
 
-  def switchPower
-    @powerState = !@powerState
+  def switch_power
+    @power_state = !@power_state
   end
 
-  def fillTank
-    @currentWaterCapacity = @maxWaterCapacity
+  def fill_tank
+    @current_water_capacity = @max_water_capacity
   end
 
-  def addGround
-    @coffeeInserted = true
+  def add_coffee_ground
+    @coffee_inserted = true
   end
 
-  def makeCoffee(cup)
-    checkState(cup)
-    system("clear")
-    boilWater()
+  def make_coffee(cup)
+    check_state(cup)
+    system('clear')
+    boil_water
     puts "Enjoy your #{cup.size}ml coffee!"
     sleep 3
-    updateState(cup)
+    update_state(cup)
   end
 
   private
 
-  def boilWater
-    10.step(100, 10) { |i|
+  def boil_water
+    10.step(100, 10) do |i|
       puts "Boiling water #{i} degrees"
-      sleep @boilingSpeed
-      system("clear")
-    }
+      sleep @boiling_speed
+      system('clear')
+    end
   end
 
-  def updateState(cup)
-    @coffeeInserted = false
-    @currentWaterCapacity -= cup.size
+  def update_state(cup)
+    @coffee_inserted = false
+    @current_water_capacity -= cup.size
   end
 
-  def checkState(cup)
-    raise NoPowerException.new("No power!") unless @powerState
-    raise NotEnoughWaterException.new("Not enough water!") if @currentWaterCapacity < cup.size
-    raise NoCoffeeException.new("No coffee!") unless @coffeeInserted
+  def check_state(cup)
+    raise NoPowerException, 'No power!' unless @power_state
+    raise NotEnoughWaterException, 'Not enough water!' if @current_water_capacity < cup.size
+    raise NoCoffeeException, 'No coffee!' unless @coffee_inserted
   end
 end
 
+# Coffee maker with small water capacity and high boiling speed
 class FastCoffeeMaker < CoffeeMaker
   def initialize
     super(500, 0.3)
   end
 
-  def getName
-    "Fast Coffee Maker"
-  end
-
-  def makeCoffee(cup)
-    super
+  def name
+    'Fast Coffee Maker'
   end
 end
 
+# Coffee maker with average water capacity and average boiling speed
 class NormalCoffeeMaker < CoffeeMaker
   def initialize
     super(1500, 0.5)
   end
 
-  def getName
-    "Coffee Maker"
-  end
-
-  def makeCoffee(cup)
-    super
+  def name
+    'Coffee Maker'
   end
 end
 
+# Coffee maker with high water capacity and low boiling speed
 class GroupCoffeeMaker < CoffeeMaker
   def initialize
     super(3000, 1.5)
   end
 
-  def getName
-    "Group Coffee Maker"
+  def name
+    'Group Coffee Maker'
   end
 
-  def selectCupNumber(cup)
-    begin
-      system("clear")
-      print "Enter number of cups (1 - #{@currentWaterCapacity / cup.size}): "
+  def select_cup_number(cup)
+    number = 0
+    loop do
+      system('clear')
+      print "Enter number of cups (1 - #{@current_water_capacity / cup.size}): "
       number = gets.chomp.to_i
-      checker = number * cup.size > @currentWaterCapacity
+      checker = number * cup.size > @current_water_capacity
       if checker
-        puts "To many cups! Try again!"
+        puts 'To many cups! Try again!'
         sleep 2
       elsif number < 1
-        puts "Wrong input! Try Again!"
+        puts 'Wrong input! Try Again!'
         sleep 2
       end
-    end while checker or number < 1
+      break unless checker || (number < 1)
+    end
     number
   end
 
-  def updateState(ml)
-    @coffeeInserted = false
-    @currentWaterCapacity -= ml
+  def update_state(water_ml)
+    @coffee_inserted = false
+    @current_water_capacity -= water_ml
   end
 
-  def makeCoffee(cup)
-    checkState(cup)
-    number = selectCupNumber(cup)
-    system("clear")
-    boilWater()
-    puts "Enjoy your #{number} #{"cup".pluralize(number)} of coffee!"
+  def make_coffee(cup)
+    check_state(cup)
+    number = select_cup_number(cup)
+    system('clear')
+    boil_water
+    puts "Enjoy your #{number} #{'cup'.pluralize(number)} of coffee!"
     sleep 3
-    updateState(cup.size * number)
+    update_state(cup.size * number)
   end
 end
 
+# Coffee machine for different coffee types
 class CoffeeMachine < CoffeeMaker
-  attr_reader :currentMilkCapacity, :coffeeCount
+  attr_reader :current_milk_capacity, :coffee_count
 
   def initialize
     super(1500, 0.8)
-    @maxMilkCapacity = 1000
-    @currentMilkCapacity = 0
-    @coffeeCount = 0
+    @max_milk_capacity = 1000
+    @current_milk_capacity = 0
+    @coffee_count = 0
   end
 
-  def getName
-    "Coffee Machine"
+  def name
+    'Coffee Machine'
   end
 
-  def fillMilkTank
-    @currentMilkCapacity = @maxMilkCapacity
+  def fill_milk_tank
+    @current_milk_capacity = @max_milk_capacity
   end
 
-  def selectCoffee
-    begin
-      system("clear")
-      puts "Coffee Selection".center(50)
-      puts "a - Espresso"
-      puts "b - Latte"
-      puts "c - Cappuccino"
-      print "Enter your choice: "
+  def select_coffee
+    choice = 0
+    loop do
+      system('clear')
+      puts 'Coffee Selection'.center(50)
+      puts 'a - Espresso'
+      puts 'b - Latte'
+      puts 'c - Cappuccino'
+      print 'Enter your choice: '
       choice = gets.chomp
-      checker = !(("a".."c").include? choice)
+      checker = !(('a'..'c').include? choice)
       if checker
-        puts "Wrong input! Try again!"
+        puts 'Wrong input! Try again!'
         sleep 2
       end
-    end while checker
+      break unless checker
+    end
     choice
   end
 
-  def addGround
-    @coffeeCount = 10
+  def add_coffee_ground
+    @coffee_count = 10
   end
 
-  def makeCoffee(cup)
-    coffee = selectCoffee()
+  def make_coffee(_cup)
+    coffee = select_coffee
     result = nil
     case coffee
-    when "a" then result = EspressoCreator.new.getCoffee
-    when "b" then result = LatteCreator.new.getCoffee
-    when "c" then result = CappuccinoCreator.new.getCoffee
+    when 'a' then result = EspressoCreator.new.create_coffee
+    when 'b' then result = LatteCreator.new.create_coffee
+    when 'c' then result = CappuccinoCreator.new.create_coffee
     end
-    checkState(result[1], result[2])
-    system("clear")
-    boilWater()
-    pourMilk() if result[2] > 0
+    check_state(result[1], result[2])
+    system('clear')
+    boil_water
+    pour_milk if (result[2]).positive?
     puts result[0]
     sleep 3
-    updateWater(result[1])
-    updateMilk(result[2])
-    updateState()
+    update_water(result[1])
+    update_milk(result[2])
+    update_state
   end
 
   private
 
-  def pourMilk
-    system("clear")
-    print "Pouring milk"
+  def pour_milk
+    system('clear')
+    print 'Pouring milk'
     4.times do
       sleep 0.5
-      print "."
+      print '.'
     end
-    system("clear")
+    system('clear')
   end
 
-  def updateMilk(number)
-    @currentMilkCapacity -= number
+  def update_milk(number)
+    @current_milk_capacity -= number
   end
 
-  def updateWater(number)
-    @currentWaterCapacity -= number
+  def update_water(number)
+    @current_water_capacity -= number
   end
 
-  def updateState
-    @coffeeCount -= 1
+  def update_state
+    @coffee_count -= 1
   end
 
-  def checkState(water, milk)
-    raise NoPowerException.new("No power!") unless @powerState
-    raise NotEnoughWaterException.new("Not enough water!") if @currentWaterCapacity < water
-    raise NotEnoughMilkException.new("Not enough milk!") if @currentMilkCapacity < milk
-    raise NoCoffeeException.new("No coffee!") if @coffeeCount == 0
+  def check_state(water, milk)
+    raise NoPowerException, 'No power!' unless @power_state
+    raise NotEnoughWaterException, 'Not enough water!' if @current_water_capacity < water
+    raise NotEnoughMilkException, 'Not enough milk!' if @current_milk_capacity < milk
+    raise NoCoffeeException, 'No coffee!' if @coffee_count.zero?
   end
 end

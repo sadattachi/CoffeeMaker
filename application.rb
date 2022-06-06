@@ -1,138 +1,145 @@
-require "./coffeemaker"
-require "./cups"
+# frozen_string_literal: true
 
+require './coffeemaker'
+require './cups'
+
+# Main application module
 module Application
   def self.run
     menu = Menu.new
-    menu.selectCoffeeMaker
-    begin
-      menu.printMenu
+    menu.select_coffee_maker
+    loop do
+      menu.print_menu
       choice = gets.chomp
       case choice
-      when "a" then menu.switchPower
-      when "b" then menu.fillTank
-      when "c" then menu.addGround
-      when "d" then menu.makeCoffee
-      when "m"
-        menu.fillMilkTank if menu.coffeemaker.is_a? CoffeeMachine
-      when "e" then menu.selectCoffeeMaker
+      when 'a' then menu.switch_power
+      when 'b' then menu.fill_tank
+      when 'c' then menu.add_ground
+      when 'd' then menu.make_coffee
+      when 'q' then puts "Bye!"
+      when 'm'
+        menu.fill_milk_tank if menu.coffee_maker.is_a? CoffeeMachine
+      when 'e' then menu.select_coffee_maker
       else
-        menu.wrongInput
+        menu.wrong_input
       end
-    end while choice != "q"
+      break unless choice != 'q'
+    end
   end
 
+  # Facade for CoffeeMaker classes
   class Menu
-    attr_reader :coffeemaker
+    attr_reader :coffee_maker
 
     def initialize
-      @coffeemaker = nil
+      @coffee_maker = nil
     end
 
-    def selectCoffeeMaker
-      begin
+    def select_coffee_maker
+      loop do
         checker = false
-        system("clear")
-        puts "Select Coffee Maker".center(50)
-        puts "a - Normal"
-        puts "b - Fast"
-        puts "c - For Groups"
-        puts "d - CoffeeMachine"
-        print "Enter your choice: "
+        system('clear')
+        puts 'Select Coffee Maker'.center(50)
+        puts 'a - Normal'
+        puts 'b - Fast'
+        puts 'c - For Groups'
+        puts 'd - CoffeeMachine'
+        print 'Enter your choice: '
         choice = gets.chomp
 
         case choice
-        when "a" then @coffeemaker = NormalCoffeeMaker.new
-        when "b" then @coffeemaker = FastCoffeeMaker.new
-        when "c" then @coffeemaker = GroupCoffeeMaker.new
-        when "d" then @coffeemaker = CoffeeMachine.new
+        when 'a' then @coffee_maker = NormalCoffeeMaker.new
+        when 'b' then @coffee_maker = FastCoffeeMaker.new
+        when 'c' then @coffee_maker = GroupCoffeeMaker.new
+        when 'd' then @coffee_maker = CoffeeMachine.new
         else
           checker = true
-          wrongInput()
+          wrong_input
         end
-      end while checker
+        break unless checker
+      end
     end
 
-    def printMenu
-      system("clear")
-      puts @coffeemaker.getName.center(50)
-      puts "State: #{@coffeemaker.powerState ? "on" : "off"}"
-      if @coffeemaker.is_a? CoffeeMachine
-        puts "Coffee shots: #{@coffeemaker.coffeeCount}"
+    def print_menu
+      system('clear')
+      puts @coffee_maker.name.center(50)
+      puts "State: #{@coffee_maker.power_state ? 'on' : 'off'}"
+      if @coffee_maker.is_a? CoffeeMachine
+        puts "Coffee shots: #{@coffee_maker.coffee_count}"
       else
-        puts "Coffee grounds: #{@coffeemaker.coffeeInserted ? "inserted" : "missing"}"
+        puts "Coffee grounds: #{@coffee_maker.coffee_inserted ? 'inserted' : 'missing'}"
       end
-      puts "Water tank: #{@coffeemaker.currentWaterCapacity}ml"
-      puts "Milk tank: #{@coffeemaker.currentMilkCapacity}ml" if @coffeemaker.is_a? CoffeeMachine
-      puts "a - Power Switch"
-      puts "b - Fill water tank"
-      if @coffeemaker.is_a? CoffeeMachine
-        puts "c - Add coffee shots"
+      puts "Water tank: #{@coffee_maker.current_water_capacity}ml"
+      puts "Milk tank: #{@coffee_maker.current_milk_capacity}ml" if @coffee_maker.is_a? CoffeeMachine
+      puts 'a - Power Switch'
+      puts 'b - Fill water tank'
+      if @coffee_maker.is_a? CoffeeMachine
+        puts 'c - Add coffee shots'
       else
-        puts "c - Add coffee ground"
+        puts 'c - Add coffee ground'
       end
-      puts "m - Fill milk tank" if @coffeemaker.is_a? CoffeeMachine
-      puts "d - Make coffee"
-      puts "e - Buy new coffee maker"
-      puts "q - Quit"
-      print "Enter your choice: "
+      puts 'm - Fill milk tank' if @coffee_maker.is_a? CoffeeMachine
+      puts 'd - Make coffee'
+      puts 'e - Buy new coffee maker'
+      puts 'q - Quit'
+      print 'Enter your choice: '
     end
 
-    def wrongInput
-      puts "Wrong input! Try again!"
+    def wrong_input
+      puts 'Wrong input! Try again!'
       sleep 2
     end
 
-    def switchPower
-      @coffeemaker.switchPower
+    def switch_power
+      @coffee_maker.switch_power
     end
 
-    def fillTank
-      @coffeemaker.fillTank
+    def fill_tank
+      @coffee_maker.fill_tank
     end
 
-    def fillMilkTank
-      @coffeemaker.fillMilkTank
+    def fill_milk_tank
+      @coffee_maker.fill_milk_tank
     end
 
-    def addGround
-      @coffeemaker.addGround
+    def add_ground
+      @coffee_maker.add_coffee_ground
     end
 
-    def makeCoffee
-      begin
-        if !(@coffeemaker.is_a? CoffeeMachine)
-          cup = cupSelection()
-        else
-          cup = MediumCup.new
-        end
-        @coffeemaker.makeCoffee(cup)
-      rescue => e
-        puts e.message
-        sleep 2
-      end
+    def make_coffee
+      puts "test"
+      cup = if !(@coffee_maker.is_a? CoffeeMachine)
+              cup_selection
+            else
+              MediumCup.new
+            end
+      @coffee_maker.make_coffee(cup)
+    rescue StandardError => e
+      puts e.message
+      sleep 2
     end
 
     private
 
-    def cupSelection
-      begin
-        system("clear")
-        puts "Select cup".center(50)
-        puts "a - Small  (250ml)"
-        puts "b - Medium (350ml)"
-        puts "c - Large  (500ml)"
-        print "Enter your choice: "
+    def cup_selection
+      loop do
+        system('clear')
+        puts 'Select cup'.center(50)
+        puts 'a - Small  (250ml)'
+        puts 'b - Medium (350ml)'
+        puts 'c - Large  (500ml)'
+        print 'Enter your choice: '
         choice = gets.chomp
 
         case choice
-        when "a" then return SmallCup.new
-        when "b" then return MediumCup.new
-        when "c" then return LargeCup.new
+        when 'a' then return SmallCup.new
+        when 'b' then return MediumCup.new
+        when 'c' then return LargeCup.new
         else
-          wrongInput()
+          wrong_input
         end
-      end while true
+        break unless true
+      end
     end
   end
 end
