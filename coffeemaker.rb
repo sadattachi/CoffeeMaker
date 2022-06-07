@@ -2,22 +2,28 @@
 
 require './exceptions'
 require './coffees'
+require './states'
 require 'active_support/inflector'
 
 # Base class for coffee makers
 class CoffeeMaker
-  attr_reader :power_state, :current_water_capacity, :coffee_inserted
+  attr_reader :current_water_capacity, :coffee_inserted, :state
 
   def initialize(max_capacity, boiling_speed)
-    @power_state = false
     @coffee_inserted = false
     @max_water_capacity = max_capacity
     @current_water_capacity = 0
     @boiling_speed = boiling_speed
+    @state = PowerOffState.new
+    @state.context = self
   end
 
   def switch_power
-    @power_state = !@power_state
+    if @state.is_a? PowerOffState
+      transition_to(ReadyState.new)
+    else
+      transition_to(PowerOffState.new)
+    end
   end
 
   def fill_tank
@@ -37,11 +43,28 @@ class CoffeeMaker
     update_state(cup)
   end
 
+  def transition_to(state)
+    print 'Waiting'
+    4.times do
+      sleep 0.3
+      print '.'
+    end
+    @state = state
+    @state.context = self
+    system('clear')
+  end
+
   private
 
+  def action
+    @state.action
+  end
+
   def boil_water
+    transition_to(BoilingWaterState.new)
     10.step(100, 10) do |i|
-      puts "Boiling water #{i} degrees"
+      puts "State: #{action}"
+      puts "#{i} degrees"
       sleep @boiling_speed
       system('clear')
     end
@@ -50,10 +73,11 @@ class CoffeeMaker
   def update_state(cup)
     @coffee_inserted = false
     @current_water_capacity -= cup.size
+    transition_to(ReadyState.new)
   end
 
   def check_state(cup)
-    raise NoPowerException, 'No power!' unless @power_state
+    raise NoPowerException, 'No power!' if @state.is_a? PowerOffState
     raise NotEnoughWaterException, 'Not enough water!' if @current_water_capacity < cup.size
     raise NoCoffeeException, 'No coffee!' unless @coffee_inserted
   end
@@ -113,6 +137,7 @@ class GroupCoffeeMaker < CoffeeMaker
   def update_state(water_ml)
     @coffee_inserted = false
     @current_water_capacity -= water_ml
+    transition_to(ReadyState.new)
   end
 
   def make_coffee(cup)
@@ -122,6 +147,7 @@ class GroupCoffeeMaker < CoffeeMaker
     boil_water
     puts "Enjoy your #{number} #{'cup'.pluralize(number)} of coffee!"
     sleep 3
+    system('clear')
     update_state(cup.size * number)
   end
 end
@@ -183,6 +209,7 @@ class CoffeeMachine < CoffeeMaker
     pour_milk if (result[2]).positive?
     puts result[0]
     sleep 3
+    system('clear')
     update_water(result[1])
     update_milk(result[2])
     update_state
@@ -191,7 +218,9 @@ class CoffeeMachine < CoffeeMaker
   private
 
   def pour_milk
+    transition_to(PouringMilkState.new)
     system('clear')
+    puts "State: #{action}"
     print 'Pouring milk'
     4.times do
       sleep 0.5
@@ -209,11 +238,12 @@ class CoffeeMachine < CoffeeMaker
   end
 
   def update_state
+    transition_to(ReadyState.new)
     @coffee_count -= 1
   end
 
   def check_state(water, milk)
-    raise NoPowerException, 'No power!' unless @power_state
+    raise NoPowerException, 'No power!' if @state.is_a? PowerOffState
     raise NotEnoughWaterException, 'Not enough water!' if @current_water_capacity < water
     raise NotEnoughMilkException, 'Not enough milk!' if @current_milk_capacity < milk
     raise NoCoffeeException, 'No coffee!' if @coffee_count.zero?

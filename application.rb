@@ -63,7 +63,7 @@ module Application
     def print_menu
       system('clear')
       puts @coffee_maker.name.center(50)
-      puts "State: #{@coffee_maker.power_state ? 'on' : 'off'}"
+      puts "State: #{@coffee_maker.state.action}"
       if @coffee_maker.is_a? CoffeeMachine
         puts "Coffee shots: #{@coffee_maker.coffee_count}"
       else
@@ -115,6 +115,7 @@ module Application
       @coffee_maker.make_coffee(cup)
     rescue StandardError => e
       puts e.message
+      gets
       sleep 2
     end
 
